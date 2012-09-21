@@ -13,6 +13,6 @@ This will output the standard Nagios format:
 
 `OK` / `WARNING` / `CRITICAL` correspond to the status being "green", "yellow", or "red" respectively.
 
-Script is a modified version if check\_phpfpm by [MAB](https://github.com/mabitt/mab-nagios-plugins).
+Script is a modified version of check\_phpfpm by [MAB](https://github.com/mabitt/mab-nagios-plugins).
 
 Enjoy.
