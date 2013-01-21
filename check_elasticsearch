@@ -141,13 +141,13 @@ fi
 
 COMPARE=$listql
 
-if [ "$status" == "red" ]; then
+if [ "$status" = "red" ]; then
 	echo -n "CRITICAL"
 	EXST=$ST_CR
-elif [ "$status" == "yellow" ]; then
+elif [ "$status" = "yellow" ]; then
 	echo -n "WARNING"
 	EXST=$ST_WR
-elif [ "$status" == "green" ]; then
+elif [ "$status" = "green" ]; then
 	echo -n "OK"
 	EXST=$ST_OK
 else
