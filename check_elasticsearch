@@ -121,7 +121,7 @@ unassigned_shards: $unassigned_shards "
 
 do_perfdata() {
     #perfdata="'idle'=$iproc 'active'=$aproc 'total'=$tproc"
-    perfdata="'active_primary'=$active_primary_shards 'active'=$active_shards 'relocating'=$relocating_shards 'init'=$initializing_shards"
+    perfdata="'active_primary'=$active_primary_shards 'active'=$active_shards 'relocating'=$relocating_shards 'init'=$initializing_shards 'unass'=$unassigned_shards"
 }
 
 # Here we go!
