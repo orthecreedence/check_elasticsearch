@@ -88,7 +88,7 @@ get_status() {
     filename=${PROGNAME}-${hostname}-${status_page}.1
     filename=`echo $filename | tr -d '\/'`
     filename=${output_dir}/${filename}
-	wget -q --header Host:stats -t 3 -T 3 http://${hostname}:${port}/${status_page}?pretty=true -O ${filename}
+	wget -q -t 3 -T 3 http://${hostname}:${port}/${status_page}?pretty=true -O ${filename}
 }
 
 get_vals() {
