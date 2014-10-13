@@ -125,6 +125,11 @@ do_perfdata() {
 }
 
 # Here we go!
+which wget >/dev/null 2>&1
+if [ "$?" != "0" ]; then
+        echo "CRITICAL - wget is not installed"
+        exit $ST_CR
+fi
 get_status
 if [ ! -s "$filename" ]; then
         echo "CRITICAL - Could not connect to server $hostname"
