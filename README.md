@@ -20,6 +20,8 @@ If you have a Graphite server you can send data to it via:
 This will output data to the following metric prefix:
 
     system.$cluster_name.cluster.app.elasticsearch.cluster
+    
+If you use [Chef](https://www.getchef.com/chef/) there is a cookbook for installing this plugin at [https://github.com/cjs226/check_elasticsearch_cookbook](https://github.com/cjs226/check_elasticsearch_cookbook).
 
 Script is a modified version of check\_phpfpm by [MAB](https://github.com/mabitt/mab-nagios-plugins).
 
