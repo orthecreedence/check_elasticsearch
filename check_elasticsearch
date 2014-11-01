@@ -23,6 +23,7 @@ ST_OK=0
 ST_WR=1
 ST_CR=2
 ST_UK=3
+epoch=`date +%s`
 hostname="localhost"
 port=9200
 status_page="/_cluster/health"
@@ -75,6 +76,14 @@ while test -n "$1"; do
             output_dir=$2
             shift
             ;;
+	--carbon-server|-c)
+            carbon_server=$2
+            shift
+            ;;
+	--carbon-port|-C)
+            carbon_port=$2
+            shift
+            ;;
         *)
             echo "Unknown argument: $1"
             print_help
@@ -104,6 +113,21 @@ get_vals() {
 	initializing_shards=`grep initializing_shards ${filename} | awk '{print $3}' | sed 's|[",]||g'`
 	unassigned_shards=`grep unassigned_shards ${filename} | awk '{print $3}' | sed 's|[",]||g'`
 	rm -f ${filename}
+
+	# Determine the Nagios Status and Exit Code
+	if [ "$status" = "red" ]; then
+		NAGSTATUS="CRITICAL"
+		EXST=$ST_CR
+	elif [ "$status" = "yellow" ]; then
+		NAGSTATUS="WARNING"
+		EXST=$ST_WR
+	elif [ "$status" = "green" ]; then
+		NAGSTATUS="OK"
+		EXST=$ST_OK
+	else
+		NAGSTATUS="UNKNOWN"
+		EXST=$ST_UK
+	fi
 }
 
 do_output() {
@@ -124,6 +148,19 @@ do_perfdata() {
     perfdata="'active_primary'=$active_primary_shards 'active'=$active_shards 'relocating'=$relocating_shards 'init'=$initializing_shards 'unass'=$unassigned_shards"
 }
 
+do_graphite() {
+	if [ "$carbon_server" != "" -a "$carbon_port" != "" ]; then
+		echo "system.$name.cluster.app.elasticsearch.cluster.status                $EXST                  $epoch" | nc -w 2 $carbon_server $carbon_port
+		echo "system.$name.cluster.app.elasticsearch.cluster.nodes.ttl             $number_nodes          $epoch" | nc -w 2 $carbon_server $carbon_port
+		echo "system.$name.cluster.app.elasticsearch.cluster.nodes.data            $number_data_nodes     $epoch" | nc -w 2 $carbon_server $carbon_port
+		echo "system.$name.cluster.app.elasticsearch.cluster.shards.active         $active_shards         $epoch" | nc -w 2 $carbon_server $carbon_port
+		echo "system.$name.cluster.app.elasticsearch.cluster.shards.active_primary $active_primary_shards $epoch" | nc -w 2 $carbon_server $carbon_port
+		echo "system.$name.cluster.app.elasticsearch.cluster.shards.initializing   $initializing_shards   $epoch" | nc -w 2 $carbon_server $carbon_port
+		echo "system.$name.cluster.app.elasticsearch.cluster.shards.relocating     $relocating_shards     $epoch" | nc -w 2 $carbon_server $carbon_port
+		echo "system.$name.cluster.app.elasticsearch.cluster.shards.unassigned     $unassigned_shards     $epoch" | nc -w 2 $carbon_server $carbon_port
+	fi
+}
+
 # Here we go!
 which wget >/dev/null 2>&1
 if [ "$?" != "0" ]; then
@@ -142,24 +179,11 @@ else
         else
                 do_output
                 do_perfdata
+		do_graphite
         fi
 fi
 
 COMPARE=$listql
 
-if [ "$status" = "red" ]; then
-	echo -n "CRITICAL"
-	EXST=$ST_CR
-elif [ "$status" = "yellow" ]; then
-	echo -n "WARNING"
-	EXST=$ST_WR
-elif [ "$status" = "green" ]; then
-	echo -n "OK"
-	EXST=$ST_OK
-else
-	echo -n "UNKNOWN"
-	EXST=$ST_UK
-fi
-
-echo " - ${output} | ${perfdata}"
+echo "${NAGSTATUS} - ${output} | ${perfdata}"
 exit $EXST
