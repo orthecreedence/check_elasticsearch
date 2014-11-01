@@ -13,6 +13,14 @@ This will output the standard Nagios format:
 
 `OK` / `WARNING` / `CRITICAL` correspond to the status being "green", "yellow", or "red" respectively.
 
+If you have a Graphite server you can send data to it via:
+
+    ./check_elasticsearch -H es1.mysite.com -P 9200 -c graphite.foo.com -C 2003
+    
+This will output data to the following metric prefix:
+
+    system.$cluster_name.cluster.app.elasticsearch.cluster
+
 Script is a modified version of check\_phpfpm by [MAB](https://github.com/mabitt/mab-nagios-plugins).
 
 Enjoy.
