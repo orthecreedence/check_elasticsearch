@@ -50,6 +50,8 @@ print_help() {
     echo "  -o/--output-directory)"
     echo "     Specifies where to write the tmp-file that the check creates."
     echo "     Default is: /tmp"
+    echo "  -k/--ok-on-yellow)"
+    echo "     Exit with OK state if the cluster is yellow."
     exit $ST_UK
 }
 
@@ -73,6 +75,10 @@ while test -n "$1"; do
             ;;
         --output-directory|-o)
             output_dir=$2
+            shift
+            ;;
+        --ok-on-yellow|-k)
+            ok_on_yellow=$2
             shift
             ;;
         *)
@@ -146,8 +152,13 @@ if [ "$status" = "red" ]; then
 	echo -n "CRITICAL"
 	EXST=$ST_CR
 elif [ "$status" = "yellow" ]; then
-	echo -n "WARNING"
-	EXST=$ST_WR
+        if [[ $ok_on_yellow == "" ]]; then
+		echo -n "WARNING"
+                EXST=$ST_WR
+        else
+		echo -n "OK (yellow)"
+                EXST=$ST_OK
+        fi
 elif [ "$status" = "green" ]; then
 	echo -n "OK"
 	EXST=$ST_OK
