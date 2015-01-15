@@ -76,11 +76,11 @@ while test -n "$1"; do
             output_dir=$2
             shift
             ;;
-	--carbon-server|-c)
+		--carbon-server|-c)
             carbon_server=$2
             shift
             ;;
-	--carbon-port|-C)
+		--carbon-port|-C)
             carbon_port=$2
             shift
             ;;
