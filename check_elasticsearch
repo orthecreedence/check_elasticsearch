@@ -101,17 +101,17 @@ get_status() {
 }
 
 get_vals() {
-	#name=`grep cluster_name ${filename} | awk '{print $3}' | sed 's|[",]||g'`
-	name=`grep cluster_name ${filename} | awk 'BEGIN { FS = " : " } ; {print $2}' | sed 's|[",]||g'`
-	status=`grep status ${filename} | awk '{print $3}' | sed 's|[",]||g'`
-	timed_out=`grep timed_out ${filename} | awk '{print $3}' | sed 's|[",]||g'`
-	number_nodes=`grep number_of_nodes ${filename} | awk '{print $3}' | sed 's|[",]||g'`
-	number_data_nodes=`grep number_of_data_nodes ${filename} | awk '{print $3}' | sed 's|[",]||g'`
-	active_primary_shards=`grep active_primary_shards ${filename} | awk '{print $3}' | sed 's|[",]||g'`
-	active_shards=`grep active_shards ${filename} | awk '{print $3}' | sed 's|[",]||g'`
-	relocating_shards=`grep relocating_shards ${filename} | awk '{print $3}' | sed 's|[",]||g'`
-	initializing_shards=`grep initializing_shards ${filename} | awk '{print $3}' | sed 's|[",]||g'`
-	unassigned_shards=`grep unassigned_shards ${filename} | awk '{print $3}' | sed 's|[",]||g'`
+	#name=`grep cluster_name ${filename} | awk '{print $3}' | sed 's|[\r",]||g'`
+	name=`grep cluster_name ${filename} | awk 'BEGIN { FS = " : " } ; {print $2}' | sed 's|[\r",]||g'`
+	status=`grep status ${filename} | awk '{print $3}' | sed 's|[\r",]||g'`
+	timed_out=`grep timed_out ${filename} | awk '{print $3}' | sed 's|[\r",]||g'`
+	number_nodes=`grep number_of_nodes ${filename} | awk '{print $3}' | sed 's|[\r",]||g'`
+	number_data_nodes=`grep number_of_data_nodes ${filename} | awk '{print $3}' | sed 's|[\r",]||g'`
+	active_primary_shards=`grep active_primary_shards ${filename} | awk '{print $3}' | sed 's|[\r",]||g'`
+	active_shards=`grep active_shards ${filename} | awk '{print $3}' | sed 's|[\r",]||g'`
+	relocating_shards=`grep relocating_shards ${filename} | awk '{print $3}' | sed 's|[\r",]||g'`
+	initializing_shards=`grep initializing_shards ${filename} | awk '{print $3}' | sed 's|[\r",]||g'`
+	unassigned_shards=`grep unassigned_shards ${filename} | awk '{print $3}' | sed 's|[\r",]||g'`
 	rm -f ${filename}
 
 	# Determine the Nagios Status and Exit Code
