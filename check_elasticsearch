@@ -18,7 +18,6 @@ PROGNAME=`basename $0`
 VERSION="Version 0.2.0,"
 AUTHOR="Andrew Lyon, Based on Mike Adolphs (http://www.matejunkie.com/) check_nginx.sh code"
 
-
 ST_OK=0
 ST_WR=1
 ST_CR=2
@@ -29,6 +28,7 @@ port=9200
 status_page="/_cluster/health"
 output_dir=/tmp
 secure=0
+carbon_key="system.:::name:::.cluster.app.elasticsearch.cluster"
 
 print_version() {
     echo "$VERSION $AUTHOR"
@@ -82,6 +82,10 @@ while test -n "$1"; do
             ;;
 	--carbon-port|-C)
             carbon_port=$2
+            shift
+            ;;
+	--carbon-key|-k)
+            carbon_key=$2
             shift
             ;;
         *)
@@ -150,14 +154,16 @@ do_perfdata() {
 
 do_graphite() {
 	if [ "$carbon_server" != "" -a "$carbon_port" != "" ]; then
-		echo "system.$name.cluster.app.elasticsearch.cluster.status                $EXST                  $epoch" | nc -w 2 $carbon_server $carbon_port
-		echo "system.$name.cluster.app.elasticsearch.cluster.nodes.ttl             $number_nodes          $epoch" | nc -w 2 $carbon_server $carbon_port
-		echo "system.$name.cluster.app.elasticsearch.cluster.nodes.data            $number_data_nodes     $epoch" | nc -w 2 $carbon_server $carbon_port
-		echo "system.$name.cluster.app.elasticsearch.cluster.shards.active         $active_shards         $epoch" | nc -w 2 $carbon_server $carbon_port
-		echo "system.$name.cluster.app.elasticsearch.cluster.shards.active_primary $active_primary_shards $epoch" | nc -w 2 $carbon_server $carbon_port
-		echo "system.$name.cluster.app.elasticsearch.cluster.shards.initializing   $initializing_shards   $epoch" | nc -w 2 $carbon_server $carbon_port
-		echo "system.$name.cluster.app.elasticsearch.cluster.shards.relocating     $relocating_shards     $epoch" | nc -w 2 $carbon_server $carbon_port
-		echo "system.$name.cluster.app.elasticsearch.cluster.shards.unassigned     $unassigned_shards     $epoch" | nc -w 2 $carbon_server $carbon_port
+		key="${carbon_key/:::name:::/$name}"
+		echo "$key.cluster.status                $EXST                  $epoch" | nc -w 2 $carbon_server $carbon_port
+		echo "$key.cluster.nodes.ttl             $number_nodes          $epoch" | nc -w 2 $carbon_server $carbon_port
+		echo "$key.cluster.nodes.data            $number_data_nodes     $epoch" | nc -w 2 $carbon_server $carbon_port
+		echo "$key.cluster.shards.active         $active_shards         $epoch" | nc -w 2 $carbon_server $carbon_port
+		echo "$key.cluster.shards.active_primary $active_primary_shards $epoch" | nc -w 2 $carbon_server $carbon_port
+		echo "$key.cluster.shards.initializing   $initializing_shards   $epoch" | nc -w 2 $carbon_server $carbon_port
+		echo "$key.cluster.shards.relocating     $relocating_shards     $epoch" | nc -w 2 $carbon_server $carbon_port
+		echo "$key.cluster.shards.unassigned     $unassigned_shards     $epoch" | nc -w 2 $carbon_server $carbon_port
+		unset key
 	fi
 }
 
