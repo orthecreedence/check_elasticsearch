@@ -154,7 +154,7 @@ do_perfdata() {
 
 do_graphite() {
     if [ "$carbon_server" != "" -a "$carbon_port" != "" ]; then
-        key="${carbon_key/:::name:::/$name}"
+        key=$(echo $carbon_key | sed "s/:::name:::/$name/")
         echo "$key.cluster.status                $EXST                  $epoch" | nc -w 2 $carbon_server $carbon_port
         echo "$key.cluster.nodes.ttl             $number_nodes          $epoch" | nc -w 2 $carbon_server $carbon_port
         echo "$key.cluster.nodes.data            $number_data_nodes     $epoch" | nc -w 2 $carbon_server $carbon_port
