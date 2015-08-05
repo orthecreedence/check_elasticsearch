@@ -38,8 +38,8 @@ print_help() {
     print_version $PROGNAME $VERSION
     echo ""
     echo "$PROGNAME is a Nagios plugin to check the cluster status of elasticsearch."
-	echo "It also parses the status page to get a few useful variables out, and return"
-	echo "them in the output."
+    echo "It also parses the status page to get a few useful variables out, and return"
+    echo "them in the output."
     echo ""
     echo "$PROGNAME -H localhost -P 9200 -o /tmp"
     echo ""
@@ -76,23 +76,23 @@ while test -n "$1"; do
             output_dir=$2
             shift
             ;;
-	--carbon-server|-c)
+        --carbon-server|-c)
             carbon_server=$2
             shift
             ;;
-	--carbon-port|-C)
+        --carbon-port|-C)
             carbon_port=$2
             shift
             ;;
-	--carbon-key|-k)
+        --carbon-key|-k)
             carbon_key=$2
             shift
             ;;
         *)
-            echo "Unknown argument: $1"
-            print_help
-            exit $ST_UK
-            ;;
+        echo "Unknown argument: $1"
+        print_help
+        exit $ST_UK
+        ;;
     esac
     shift
 done
@@ -101,37 +101,37 @@ get_status() {
     filename=${PROGNAME}-${hostname}-${status_page}.1
     filename=`echo $filename | tr -d '\/'`
     filename=${output_dir}/${filename}
-	wget -q -t 3 -T 3 http://${hostname}:${port}/${status_page}?pretty=true -O ${filename}
+    wget -q -t 3 -T 3 http://${hostname}:${port}/${status_page}?pretty=true -O ${filename}
 }
 
 get_vals() {
-	#name=`grep cluster_name ${filename} | awk '{print $3}' | sed 's|[\r",]||g'`
-	name=`grep cluster_name ${filename} | awk 'BEGIN { FS = " : " } ; {print $2}' | sed 's|[\r",]||g'`
-	status=`grep status ${filename} | awk '{print $3}' | sed 's|[\r",]||g'`
-	timed_out=`grep timed_out ${filename} | awk '{print $3}' | sed 's|[\r",]||g'`
-	number_nodes=`grep number_of_nodes ${filename} | awk '{print $3}' | sed 's|[\r",]||g'`
-	number_data_nodes=`grep number_of_data_nodes ${filename} | awk '{print $3}' | sed 's|[\r",]||g'`
-	active_primary_shards=`grep active_primary_shards ${filename} | awk '{print $3}' | sed 's|[\r",]||g'`
-	active_shards=`grep active_shards ${filename} | awk '{print $3}' | sed 's|[\r",]||g'`
-	relocating_shards=`grep relocating_shards ${filename} | awk '{print $3}' | sed 's|[\r",]||g'`
-	initializing_shards=`grep initializing_shards ${filename} | awk '{print $3}' | sed 's|[\r",]||g'`
-	unassigned_shards=`grep unassigned_shards ${filename} | awk '{print $3}' | sed 's|[\r",]||g'`
-	rm -f ${filename}
+    #name=`grep cluster_name ${filename} | awk '{print $3}' | sed 's|[\r",]||g'`
+    name=`grep cluster_name ${filename} | awk 'BEGIN { FS = " : " } ; {print $2}' | sed 's|[\r",]||g'`
+    status=`grep status ${filename} | awk '{print $3}' | sed 's|[\r",]||g'`
+    timed_out=`grep timed_out ${filename} | awk '{print $3}' | sed 's|[\r",]||g'`
+    number_nodes=`grep number_of_nodes ${filename} | awk '{print $3}' | sed 's|[\r",]||g'`
+    number_data_nodes=`grep number_of_data_nodes ${filename} | awk '{print $3}' | sed 's|[\r",]||g'`
+    active_primary_shards=`grep active_primary_shards ${filename} | awk '{print $3}' | sed 's|[\r",]||g'`
+    active_shards=`grep active_shards ${filename} | awk '{print $3}' | sed 's|[\r",]||g'`
+    relocating_shards=`grep relocating_shards ${filename} | awk '{print $3}' | sed 's|[\r",]||g'`
+    initializing_shards=`grep initializing_shards ${filename} | awk '{print $3}' | sed 's|[\r",]||g'`
+    unassigned_shards=`grep unassigned_shards ${filename} | awk '{print $3}' | sed 's|[\r",]||g'`
+    rm -f ${filename}
 
-	# Determine the Nagios Status and Exit Code
-	if [ "$status" = "red" ]; then
-		NAGSTATUS="CRITICAL"
-		EXST=$ST_CR
-	elif [ "$status" = "yellow" ]; then
-		NAGSTATUS="WARNING"
-		EXST=$ST_WR
-	elif [ "$status" = "green" ]; then
-		NAGSTATUS="OK"
-		EXST=$ST_OK
-	else
-		NAGSTATUS="UNKNOWN"
-		EXST=$ST_UK
-	fi
+    # Determine the Nagios Status and Exit Code
+    if [ "$status" = "red" ]; then
+        NAGSTATUS="CRITICAL"
+        EXST=$ST_CR
+    elif [ "$status" = "yellow" ]; then
+        NAGSTATUS="WARNING"
+        EXST=$ST_WR
+    elif [ "$status" = "green" ]; then
+        NAGSTATUS="OK"
+        EXST=$ST_OK
+    else
+        NAGSTATUS="UNKNOWN"
+        EXST=$ST_UK
+    fi
 }
 
 do_output() {
@@ -153,40 +153,40 @@ do_perfdata() {
 }
 
 do_graphite() {
-	if [ "$carbon_server" != "" -a "$carbon_port" != "" ]; then
-		key="${carbon_key/:::name:::/$name}"
-		echo "$key.cluster.status                $EXST                  $epoch" | nc -w 2 $carbon_server $carbon_port
-		echo "$key.cluster.nodes.ttl             $number_nodes          $epoch" | nc -w 2 $carbon_server $carbon_port
-		echo "$key.cluster.nodes.data            $number_data_nodes     $epoch" | nc -w 2 $carbon_server $carbon_port
-		echo "$key.cluster.shards.active         $active_shards         $epoch" | nc -w 2 $carbon_server $carbon_port
-		echo "$key.cluster.shards.active_primary $active_primary_shards $epoch" | nc -w 2 $carbon_server $carbon_port
-		echo "$key.cluster.shards.initializing   $initializing_shards   $epoch" | nc -w 2 $carbon_server $carbon_port
-		echo "$key.cluster.shards.relocating     $relocating_shards     $epoch" | nc -w 2 $carbon_server $carbon_port
-		echo "$key.cluster.shards.unassigned     $unassigned_shards     $epoch" | nc -w 2 $carbon_server $carbon_port
-		unset key
-	fi
+    if [ "$carbon_server" != "" -a "$carbon_port" != "" ]; then
+        key=$(echo $carbon_key | sed "s/:::name:::/$name/")
+        echo "$key.cluster.status                $EXST                  $epoch" | nc -w 2 $carbon_server $carbon_port
+        echo "$key.cluster.nodes.ttl             $number_nodes          $epoch" | nc -w 2 $carbon_server $carbon_port
+        echo "$key.cluster.nodes.data            $number_data_nodes     $epoch" | nc -w 2 $carbon_server $carbon_port
+        echo "$key.cluster.shards.active         $active_shards         $epoch" | nc -w 2 $carbon_server $carbon_port
+        echo "$key.cluster.shards.active_primary $active_primary_shards $epoch" | nc -w 2 $carbon_server $carbon_port
+        echo "$key.cluster.shards.initializing   $initializing_shards   $epoch" | nc -w 2 $carbon_server $carbon_port
+        echo "$key.cluster.shards.relocating     $relocating_shards     $epoch" | nc -w 2 $carbon_server $carbon_port
+        echo "$key.cluster.shards.unassigned     $unassigned_shards     $epoch" | nc -w 2 $carbon_server $carbon_port
+        unset key
+    fi
 }
 
 # Here we go!
 which wget >/dev/null 2>&1
 if [ "$?" != "0" ]; then
-        echo "CRITICAL - wget is not installed"
-        exit $ST_CR
+    echo "CRITICAL - wget is not installed"
+    exit $ST_CR
 fi
 get_status
 if [ ! -s "$filename" ]; then
-        echo "CRITICAL - Could not connect to server $hostname"
-        exit $ST_CR
+    echo "CRITICAL - Could not connect to server $hostname"
+    exit $ST_CR
 else
-        get_vals
-        if [ -z "$name" ]; then
-                echo "CRITICAL - Error parsing server output"
-                exit $ST_CR
-        else
-                do_output
-                do_perfdata
-		do_graphite
-        fi
+    get_vals
+    if [ -z "$name" ]; then
+        echo "CRITICAL - Error parsing server output"
+        exit $ST_CR
+    else
+        do_output
+        do_perfdata
+    do_graphite
+    fi
 fi
 
 COMPARE=$listql
