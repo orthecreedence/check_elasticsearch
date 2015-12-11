@@ -105,9 +105,8 @@ get_status() {
 }
 
 get_vals() {
-    #name=`grep cluster_name ${filename} | awk '{print $3}' | sed 's|[\r",]||g'`
-    name=`grep cluster_name ${filename} | awk 'BEGIN { FS = " : " } ; {print $2}' | sed 's|[\r",]||g'`
-    status=`grep status ${filename} | awk '{print $3}' | sed 's|[\r",]||g'`
+    name=$(grep '"cluster_name" :' ${filename} | awk -F '"' '{print $4}')
+    status=$(grep '"status" :' ${filename} | awk -F '"' '{print $4}')
     timed_out=`grep timed_out ${filename} | awk '{print $3}' | sed 's|[\r",]||g'`
     number_nodes=`grep number_of_nodes ${filename} | awk '{print $3}' | sed 's|[\r",]||g'`
     number_data_nodes=`grep number_of_data_nodes ${filename} | awk '{print $3}' | sed 's|[\r",]||g'`
