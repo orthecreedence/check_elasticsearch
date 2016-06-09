@@ -114,8 +114,9 @@ get_vals() {
     active_shards=`grep active_shards ${filename} | awk '{print $3}' | sed 's|[\r",]||g'`
     relocating_shards=`grep relocating_shards ${filename} | awk '{print $3}' | sed 's|[\r",]||g'`
     initializing_shards=`grep initializing_shards ${filename} | awk '{print $3}' | sed 's|[\r",]||g'`
-    unassigned_shards=`grep unassigned_shards ${filename} | awk '{print $3}' | sed 's|[\r",]||g'`
-    rm -f ${filename}
+    delayed_unassigned_shards=`grep delayed_unassigned_shards ${filename} | awk '{print $3}' | sed 's|[\r",]||g'`
+    unassigned_shards=`grep -w '"unassigned_shards' ${filename} | awk '{print $3}' | sed 's|[\r",]||g'`
+#    rm -f ${filename}
 
     # Determine the Nagios Status and Exit Code
     if [ "$status" = "red" ]; then
@@ -143,12 +144,13 @@ active_primary_shards: $active_primary_shards; \
 active_shards: $active_shards; \
 relocating_shards: $relocating_shards; \
 initializing_shards: $initializing_shards; \
+delayed_unassigned_shards: $delayed_unassigned_shards; \
 unassigned_shards: $unassigned_shards "
 }
 
 do_perfdata() {
     #perfdata="'idle'=$iproc 'active'=$aproc 'total'=$tproc"
-    perfdata="'active_primary'=$active_primary_shards 'active'=$active_shards 'relocating'=$relocating_shards 'init'=$initializing_shards 'unass'=$unassigned_shards"
+    perfdata="'active_primary'=$active_primary_shards 'active'=$active_shards 'relocating'=$relocating_shards 'init'=$initializing_shards 'delay_unass'=$delayed_unassigned_shards 'unass'=$unassigned_shards"
 }
 
 do_graphite() {
@@ -161,6 +163,7 @@ do_graphite() {
         echo "$key.cluster.shards.active_primary $active_primary_shards $epoch" | nc -w 2 $carbon_server $carbon_port
         echo "$key.cluster.shards.initializing   $initializing_shards   $epoch" | nc -w 2 $carbon_server $carbon_port
         echo "$key.cluster.shards.relocating     $relocating_shards     $epoch" | nc -w 2 $carbon_server $carbon_port
+        echo "$key.cluster.shards.delayed_unassigned     $delayed_unassigned_shards     $epoch" | nc -w 2 $carbon_server $carbon_port
         echo "$key.cluster.shards.unassigned     $unassigned_shards     $epoch" | nc -w 2 $carbon_server $carbon_port
         unset key
     fi
