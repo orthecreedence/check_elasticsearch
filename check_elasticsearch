@@ -116,7 +116,7 @@ get_vals() {
     initializing_shards=`grep initializing_shards ${filename} | awk '{print $3}' | sed 's|[\r",]||g'`
     delayed_unassigned_shards=`grep delayed_unassigned_shards ${filename} | awk '{print $3}' | sed 's|[\r",]||g'`
     unassigned_shards=`grep -w '"unassigned_shards' ${filename} | awk '{print $3}' | sed 's|[\r",]||g'`
-#    rm -f ${filename}
+    rm -f ${filename}
 
     # Determine the Nagios Status and Exit Code
     if [ "$status" = "red" ]; then
