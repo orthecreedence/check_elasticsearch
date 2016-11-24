@@ -25,7 +25,7 @@ ST_UK=3
 epoch=`date +%s`
 hostname="localhost"
 port=9200
-status_page="/_cluster/health"
+status_page="_cluster/health"
 output_dir=/tmp
 secure=0
 carbon_key="system.:::name:::.cluster.app.elasticsearch.cluster"
@@ -111,7 +111,7 @@ get_vals() {
     number_nodes=`grep number_of_nodes ${filename} | awk '{print $3}' | sed 's|[\r",]||g'`
     number_data_nodes=`grep number_of_data_nodes ${filename} | awk '{print $3}' | sed 's|[\r",]||g'`
     active_primary_shards=`grep active_primary_shards ${filename} | awk '{print $3}' | sed 's|[\r",]||g'`
-    active_shards=`grep active_shards ${filename} | awk '{print $3}' | sed 's|[\r",]||g'`
+    active_shards=`grep \"active_shards\" ${filename} | awk '{print $3}' | sed 's|[\r",]||g'`
     relocating_shards=`grep relocating_shards ${filename} | awk '{print $3}' | sed 's|[\r",]||g'`
     initializing_shards=`grep initializing_shards ${filename} | awk '{print $3}' | sed 's|[\r",]||g'`
     delayed_unassigned_shards=`grep delayed_unassigned_shards ${filename} | awk '{print $3}' | sed 's|[\r",]||g'`
