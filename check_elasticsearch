@@ -15,8 +15,8 @@
 #   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 PROGNAME=`basename $0`
-VERSION="Version 0.2.0,"
-AUTHOR="Andrew Lyon, Based on Mike Adolphs (http://www.matejunkie.com/) check_nginx.sh code"
+VERSION="Version 0.3.0,"
+AUTHOR="Andrew Lyon, Based on Mike Adolphs (http://www.matejunkie.com/) check_nginx.sh code. Authentication support added by Ryan Gallant"
 
 ST_OK=0
 ST_WR=1
@@ -24,11 +24,16 @@ ST_CR=2
 ST_UK=3
 epoch=`date +%s`
 hostname="localhost"
+user=elastic
+pass=changeme
+authentication=False
 port=9200
-status_page="/_cluster/health"
+status_page="_cluster/health"
 output_dir=/tmp
 secure=0
 carbon_key="system.:::name:::.cluster.app.elasticsearch.cluster"
+
+
 
 print_version() {
     echo "$VERSION $AUTHOR"
@@ -51,6 +56,12 @@ print_help() {
     echo "  -o/--output-directory)"
     echo "     Specifies where to write the tmp-file that the check creates."
     echo "     Default is: /tmp"
+    echo "  -u/--username)"
+    echo "    Username for elasticsearch. Turns on authentication mode when set"
+    echo "  -p/--password)"
+    echo "    Password for elasticsearch. Turns on authentication mode when set"
+    echo "  -a/--auth)"
+    echo "    Turns on authentication mode with default credentials." 
     exit $ST_UK
 }
 
@@ -70,6 +81,20 @@ while test -n "$1"; do
             ;;
         --port|-P)
             port=$2
+            shift
+            ;;
+        --password|-p)
+            password=$2
+            authentication=True
+            shift
+            ;;
+        --username|-u)
+            username=$2
+            authentication=True
+            shift
+            ;;
+        --auth|-a)
+            authentication=True
             shift
             ;;
         --output-directory|-o)
@@ -97,11 +122,16 @@ while test -n "$1"; do
     shift
 done
 
+if [ "$authentication" == True ]; then 
+    pass="--password=${pass}"
+    user="--user=${user}"
+fi 
+
 get_status() {
     filename=${PROGNAME}-${hostname}-${status_page}.1
     filename=`echo $filename | tr -d '\/'`
     filename=${output_dir}/${filename}
-    wget -q -t 3 -T 3 http://${hostname}:${port}/${status_page}?pretty=true -O ${filename}
+    wget -q -t 3 -T 3 ${user} ${pass} http://${hostname}:${port}/${status_page}?pretty=true -O ${filename}
 }
 
 get_vals() {
