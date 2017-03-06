@@ -28,3 +28,8 @@ Removed reference to Chef cookbook since this fork won't support it.
 Script is a modified version of check\_phpfpm by [MAB](https://github.com/mabitt/mab-nagios-plugins).
 
 Enjoy.
+
+# License
+
+MIT.
+
