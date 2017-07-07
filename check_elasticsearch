@@ -83,7 +83,6 @@ while test -n "$1"; do
             ;;
         --secure|-s)
             scheme=https
-            shift
             ;;
         --port|-P)
             port=$2
@@ -101,7 +100,6 @@ while test -n "$1"; do
             ;;
         --auth|-a)
             authentication=True
-            shift
             ;;
         --output-directory|-o)
             output_dir=$2
