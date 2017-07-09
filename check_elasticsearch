@@ -30,7 +30,7 @@ authentication=False
 port=9200
 status_page="_cluster/health"
 output_dir=/tmp
-secure=0
+scheme=http
 carbon_key="system.:::name:::.cluster.app.elasticsearch.cluster"
 
 
@@ -53,6 +53,8 @@ print_help() {
     echo "     Defines the hostname. Default is: localhost"
     echo "  -P/--port)"
     echo "     Defines the port. Default is: 9200"
+    echo "  -s/--secure)"
+    echo "     Use TLS. Defaults to false."
     echo "  -o/--output-directory)"
     echo "     Specifies where to write the tmp-file that the check creates."
     echo "     Default is: /tmp"
@@ -79,23 +81,25 @@ while test -n "$1"; do
             hostname=$2
             shift
             ;;
+        --secure|-s)
+            scheme=https
+            ;;
         --port|-P)
             port=$2
             shift
             ;;
         --password|-p)
-            password=$2
+            pass=$2
             authentication=True
             shift
             ;;
         --username|-u)
-            username=$2
+            user=$2
             authentication=True
             shift
             ;;
         --auth|-a)
             authentication=True
-            shift
             ;;
         --output-directory|-o)
             output_dir=$2
@@ -131,7 +135,7 @@ get_status() {
     filename=${PROGNAME}-${hostname}-${status_page}.1
     filename=`echo $filename | tr -d '\/'`
     filename=${output_dir}/${filename}
-    wget -q -t 3 -T 3 ${user} ${pass} http://${hostname}:${port}/${status_page}?pretty=true -O ${filename}
+    wget -q -t 3 -T 3 ${user} ${pass} $scheme://${hostname}:${port}/${status_page}?pretty=true -O ${filename}
 }
 
 get_vals() {
