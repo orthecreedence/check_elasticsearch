@@ -26,7 +26,7 @@ epoch=`date +%s`
 hostname="localhost"
 user=elastic
 pass=changeme
-authentication=False
+authentication="False"
 port=9200
 status_page="_cluster/health"
 output_dir=/tmp
@@ -90,16 +90,16 @@ while test -n "$1"; do
             ;;
         --password|-p)
             pass=$2
-            authentication=True
+            authentication="True"
             shift
             ;;
         --username|-u)
             user=$2
-            authentication=True
+            authentication="True"
             shift
             ;;
         --auth|-a)
-            authentication=True
+            authentication="True"
             ;;
         --output-directory|-o)
             output_dir=$2
@@ -126,7 +126,7 @@ while test -n "$1"; do
     shift
 done
 
-if [ "$authentication" == True ]; then 
+if [ "$authentication" = "True" ]; then 
     pass="--password=${pass}"
     user="--user=${user}"
 fi 
