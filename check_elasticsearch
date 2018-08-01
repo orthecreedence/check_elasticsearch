@@ -63,7 +63,7 @@ print_help() {
     echo "  -p/--password)"
     echo "    Password for elasticsearch. Turns on authentication mode when set"
     echo "  -a/--auth)"
-    echo "    Turns on authentication mode with default credentials." 
+    echo "    Turns on authentication mode with default credentials."
     exit $ST_UK
 }
 
@@ -126,15 +126,13 @@ while test -n "$1"; do
     shift
 done
 
-if [ "$authentication" = "True" ]; then 
+if [ "$authentication" = "True" ]; then
     pass="--password=${pass}"
     user="--user=${user}"
-fi 
+fi
 
 get_status() {
-    filename=${PROGNAME}-${hostname}-${status_page}.1
-    filename=`echo $filename | tr -d '\/'`
-    filename=${output_dir}/${filename}
+    filename=$(mktemp -u -p "$output_dir" --suffix="-${PROGNAME}")
     wget -q -t 3 -T 3 ${user} ${pass} $scheme://${hostname}:${port}/${status_page}?pretty=true -O ${filename}
 }
 
