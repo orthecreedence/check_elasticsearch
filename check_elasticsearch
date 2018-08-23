@@ -15,8 +15,8 @@
 #   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 PROGNAME=`basename $0`
-VERSION="Version 0.3.0,"
-AUTHOR="Andrew Lyon, Based on Mike Adolphs (http://www.matejunkie.com/) check_nginx.sh code. Authentication support added by Ryan Gallant"
+VERSION="Version 0.3.1,"
+AUTHOR="Andrew Lyon, Based on Mike Adolphs (http://www.matejunkie.com/) check_nginx.sh code. Authentication support added by Ryan Gallant, CA support added by Michael Koch."
 
 ST_OK=0
 ST_WR=1
@@ -27,6 +27,7 @@ hostname="localhost"
 user=elastic
 pass=changeme
 authentication="False"
+use_ca="False"
 port=9200
 status_page="_cluster/health"
 output_dir=/tmp
@@ -64,6 +65,8 @@ print_help() {
     echo "    Password for elasticsearch. Turns on authentication mode when set"
     echo "  -a/--auth)"
     echo "    Turns on authentication mode with default credentials."
+    echo "  -c/--ca-certificate)"
+    echo "    Uses the provided CA certificate."
     exit $ST_UK
 }
 
@@ -101,6 +104,11 @@ while test -n "$1"; do
         --auth|-a)
             authentication="True"
             ;;
+        --ca-certificate|-c)
+			ca_cert=$2
+            use_ca="True"
+            shift
+            ;;
         --output-directory|-o)
             output_dir=$2
             shift
@@ -131,9 +139,13 @@ if [ "$authentication" = "True" ]; then
     user="--user=${user}"
 fi
 
+if [ "$use_ca" = "True" ]; then
+    ca_cert="--ca-certificate=${ca_cert}"
+fi
+
 get_status() {
     filename=$(mktemp -u -p "$output_dir" --suffix="-${PROGNAME}")
-    wget -q -t 3 -T 3 ${user} ${pass} $scheme://${hostname}:${port}/${status_page}?pretty=true -O ${filename}
+    wget -q -t 3 -T 3 ${ca_cert} ${user} ${pass} $scheme://${hostname}:${port}/${status_page}?pretty=true -O ${filename}
 }
 
 get_vals() {

@@ -2,11 +2,11 @@ Nagios check script for elasticsearch
 =====================================
 
 This is a simple script to check the status of an elasticsearch cluster.
-It now supports elasticsearch 5.0 with or without x-pack authentication. 
+It now supports elasticsearch 6.3.2 with or without x-pack authentication.
 
 Usage:
 
-    ./check_elasticsearch -H es1.mysite.com -P 9200 -o /tmp [ -a ] [ -u <username> -p <password> ] 
+    ./check_elasticsearch -H es1.mysite.com -P 9200 -o /tmp [ -a ] [ -u <username> -p <password> ]
 
 This will output the standard Nagios format:
 
@@ -17,12 +17,12 @@ This will output the standard Nagios format:
 If you have a Graphite server you can send data to it via:
 
     ./check_elasticsearch -H es1.mysite.com -P 9200 -c graphite.foo.com -C 2003
-    
+
 This will output data to the following metric prefix:
 
     system.$cluster_name.cluster.app.elasticsearch.cluster
 
-Removed reference to Chef cookbook since this fork won't support it. 
+Removed reference to Chef cookbook since this fork won't support it.
 
 
 Script is a modified version of check\_phpfpm by [MAB](https://github.com/mabitt/mab-nagios-plugins).
@@ -32,4 +32,3 @@ Enjoy.
 # License
 
 MIT.
-
