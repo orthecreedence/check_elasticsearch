@@ -2,7 +2,7 @@ Nagios check script for elasticsearch
 =====================================
 
 This is a simple script to check the status of an elasticsearch cluster.
-It now supports elasticsearch 5.0 with or without x-pack authentication.
+It now supports elasticsearch 6.3.2 with or without x-pack authentication.
 
 Usage:
 
