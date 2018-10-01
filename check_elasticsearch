@@ -67,6 +67,8 @@ print_help() {
     echo "    Turns on authentication mode with default credentials."
     echo "  -c/--ca-certificate)"
     echo "    Uses the provided CA certificate."
+    echo "  -k/--ok-on-yellow)"
+    echo "     Exit with OK state if the cluster is yellow."
     exit $ST_UK
 }
 
@@ -82,6 +84,10 @@ while test -n "$1"; do
             ;;
         --hostname|-H)
             hostname=$2
+            shift
+            ;;
+        --ok-on-yellow|-k)
+            ok_on_yellow="True"
             shift
             ;;
         --secure|-s)
@@ -167,8 +173,13 @@ get_vals() {
         NAGSTATUS="CRITICAL"
         EXST=$ST_CR
     elif [ "$status" = "yellow" ]; then
-        NAGSTATUS="WARNING"
-        EXST=$ST_WR
+        if [[ "$ok_on_yellow" == "" ]]; then
+            NAGSTATUS="WARNING"
+            EXST=$ST_WR
+	else
+            NAGSTATUS="OK"
+            EXST=$ST_OK
+        fi 
     elif [ "$status" = "green" ]; then
         NAGSTATUS="OK"
         EXST=$ST_OK
