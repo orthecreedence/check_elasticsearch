@@ -173,7 +173,7 @@ get_vals() {
         NAGSTATUS="CRITICAL"
         EXST=$ST_CR
     elif [ "$status" = "yellow" ]; then
-        if [[ "$ok_on_yellow" == "" ]]; then
+        if [ -z "$ok_on_yellow" ]; then
             NAGSTATUS="WARNING"
             EXST=$ST_WR
 	else
