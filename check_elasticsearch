@@ -33,7 +33,7 @@ status_page="_cluster/health"
 output_dir=/tmp
 scheme=http
 carbon_key="system.:::name:::.cluster.app.elasticsearch.cluster"
-
+use_proxy="on"
 
 
 print_version() {
@@ -69,6 +69,8 @@ print_help() {
     echo "    Uses the provided CA certificate."
     echo "  -k/--ok-on-yellow)"
     echo "     Exit with OK state if the cluster is yellow."
+    echo "  -x/--proxy)"
+    echo "     System proxy off or on. Default is: on"
     exit $ST_UK
 }
 
@@ -95,6 +97,10 @@ while test -n "$1"; do
             ;;
         --port|-P)
             port=$2
+            shift
+            ;;
+        --proxy|-x)
+            use_proxy=$2
             shift
             ;;
         --password|-p)
@@ -149,9 +155,13 @@ if [ "$use_ca" = "True" ]; then
     ca_cert="--ca-certificate=${ca_cert}"
 fi
 
+if [ "$use_proxy" = "off" ]; then
+    proxy="--proxy=${use_proxy}"
+fi
+
 get_status() {
     filename=$(mktemp -u -p "$output_dir" --suffix="-${PROGNAME}")
-    wget -q -t 3 -T 3 ${ca_cert} ${user} ${pass} $scheme://${hostname}:${port}/${status_page}?pretty=true -O ${filename}
+    wget -q -t 3 -T 3 ${ca_cert} ${user} ${pass} $scheme://${hostname}:${port}/${status_page}?pretty=true -O ${filename} ${proxy}
 }
 
 get_vals() {
@@ -179,7 +189,7 @@ get_vals() {
 	else
             NAGSTATUS="OK"
             EXST=$ST_OK
-        fi 
+        fi
     elif [ "$status" = "green" ]; then
         NAGSTATUS="OK"
         EXST=$ST_OK
