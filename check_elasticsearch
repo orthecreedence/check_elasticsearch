@@ -243,6 +243,7 @@ fi
 get_status
 if [ ! -s "$filename" ]; then
     echo "CRITICAL - Could not connect to server $hostname"
+    rm -f "$filename"
     exit $ST_CR
 else
     get_vals
