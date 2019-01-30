@@ -28,6 +28,8 @@ user=elastic
 pass=changeme
 authentication="False"
 use_ca="False"
+use_cert="False"
+use_key="False"
 port=9200
 status_page="_cluster/health"
 output_dir=/tmp
@@ -67,6 +69,10 @@ print_help() {
     echo "    Turns on authentication mode with default credentials."
     echo "  -c/--ca-certificate)"
     echo "    Uses the provided CA certificate."
+    echo "  -C/--certificate)"
+    echo "    Uses the provided certificate."
+    echo "  -K/--private-key)"
+    echo "    Uses the provided private key."
     echo "  -k/--ok-on-yellow)"
     echo "     Exit with OK state if the cluster is yellow."
     echo "  -x/--proxy)"
@@ -121,6 +127,16 @@ while test -n "$1"; do
             use_ca="True"
             shift
             ;;
+        --certificate|-C)
+			cert=$2
+            use_cert="True"
+            shift
+            ;;
+        --private-key|-K)
+			private_key=$2
+            use_key="True"
+            shift
+            ;;
         --output-directory|-o)
             output_dir=$2
             shift
@@ -155,13 +171,28 @@ if [ "$use_ca" = "True" ]; then
     ca_cert="--ca-certificate=${ca_cert}"
 fi
 
+if [ "$use_cert" = "True" ]; then
+    cert="--certificate=${cert}"
+fi
+
+if [ "$use_key" = "True" ]; then
+    private_key="--private-key=${private_key}"
+fi
+
 if [ "$use_proxy" = "off" ]; then
     proxy="--proxy=${use_proxy}"
 fi
 
 get_status() {
     filename=$(mktemp -u -p "$output_dir" --suffix="-${PROGNAME}")
-    wget -q -t 3 -T 3 ${ca_cert} ${user} ${pass} $scheme://${hostname}:${port}/${status_page}?pretty=true -O ${filename} ${proxy}
+
+    # If authentication via private key ist defined
+    if [ -n ${private_key} ]
+    then
+       wget -q -t 3 -T 3 ${cert} ${private_key} $scheme://${hostname}:${port}/${status_page}?pretty=true -O ${filename} ${proxy}
+    else
+       wget -q -t 3 -T 3 ${ca_cert} ${user} ${pass} $scheme://${hostname}:${port}/${status_page}?pretty=true -O ${filename} ${proxy}
+    fi
 }
 
 get_vals() {
