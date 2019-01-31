@@ -24,6 +24,10 @@ This will output data to the following metric prefix:
 
 Removed reference to Chef cookbook since this fork won't support it.
 
+Elastic authentication via certificate and private kay
+Usage:
+   ./check_elasticsearch -H elasticsearch.mydomain -s --certificate /mypath/certs/admin.crt.pem --private-key /mypath/certs/private/admin.key.pem 
+
 
 Script is a modified version of check\_phpfpm by [MAB](https://github.com/mabitt/mab-nagios-plugins).
 
