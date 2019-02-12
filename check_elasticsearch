@@ -187,7 +187,7 @@ get_status() {
     filename=$(mktemp -u -p "$output_dir" --suffix="-${PROGNAME}")
 
     # If authentication via private key ist defined
-    if [ -n ${private_key} ]
+    if [ -n "${private_key}" ]
     then
        wget -q -t 3 -T 3 ${cert} ${private_key} $scheme://${hostname}:${port}/${status_page}?pretty=true -O ${filename} ${proxy}
     else
