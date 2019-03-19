@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -15,7 +15,7 @@
 #   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 PROGNAME=`basename $0`
-VERSION="Version 0.3.1,"
+VERSION="Version 0.4.0"
 AUTHOR="Andrew Lyon, Based on Mike Adolphs (http://www.matejunkie.com/) check_nginx.sh code. Authentication support added by Ryan Gallant, CA support added by Michael Koch."
 
 ST_OK=0
@@ -30,12 +30,17 @@ authentication="False"
 use_ca="False"
 use_cert="False"
 use_key="False"
+use_no_check="False"
 port=9200
 status_page="_cluster/health"
 output_dir=/tmp
 scheme=http
+carbon_server=""
+carbon_port=""
 carbon_key="system.:::name:::.cluster.app.elasticsearch.cluster"
 use_proxy="on"
+verbose="False"
+wget_add_args=()
 
 
 print_version() {
@@ -52,6 +57,8 @@ print_help() {
     echo "$PROGNAME -H localhost -P 9200 -o /tmp"
     echo ""
     echo "Options:"
+    echo "  -h/--help)"
+    echo "     Print help."
     echo "  -H/--hostname)"
     echo "     Defines the hostname. Default is: localhost"
     echo "  -P/--port)"
@@ -73,16 +80,26 @@ print_help() {
     echo "    Uses the provided certificate."
     echo "  -K/--private-key)"
     echo "    Uses the provided private key."
+    echo "  -N/--no-check-certificate)"
+    echo "     Don't check the server certificate against the available certificate authorities."
     echo "  -k/--ok-on-yellow)"
     echo "     Exit with OK state if the cluster is yellow."
     echo "  -x/--proxy)"
     echo "     System proxy off or on. Default is: on"
+    echo "  --carbon-server)"
+    echo "     Defines the carbon server. Default is Null"
+    echo "  --carbon-port)"
+    echo "     Defines the carbon port. Default is Null"
+    echo "  --carbon-key)"
+    echo "     Defines the carbon key. Default is system.:::name:::.cluster.app.elasticsearch.cluster"
+    echo "  -V/--verbose)"
+    echo "     Enable verbose mode."
     exit $ST_UK
 }
 
 while test -n "$1"; do
     case "$1" in
-        -help|-h)
+        --help|-h)
             print_help
             exit $ST_UK
             ;;
@@ -96,7 +113,6 @@ while test -n "$1"; do
             ;;
         --ok-on-yellow|-k)
             ok_on_yellow="True"
-            shift
             ;;
         --secure|-s)
             scheme=https
@@ -123,35 +139,41 @@ while test -n "$1"; do
             authentication="True"
             ;;
         --ca-certificate|-c)
-			ca_cert=$2
+            ca_cert=$2
             use_ca="True"
             shift
             ;;
         --certificate|-C)
-			cert=$2
+            cert=$2
             use_cert="True"
             shift
             ;;
         --private-key|-K)
-			private_key=$2
+            private_key=$2
             use_key="True"
             shift
+            ;;
+        --no-check-certificate|-N)
+            use_no_check="True"
             ;;
         --output-directory|-o)
             output_dir=$2
             shift
             ;;
-        --carbon-server|-c)
+        --carbon-server)
             carbon_server=$2
             shift
             ;;
-        --carbon-port|-C)
+        --carbon-port)
             carbon_port=$2
             shift
             ;;
-        --carbon-key|-k)
+        --carbon-key)
             carbon_key=$2
             shift
+            ;;
+        --verbose|-V)
+            verbose="True"
             ;;
         *)
         echo "Unknown argument: $1"
@@ -183,17 +205,25 @@ if [ "$use_proxy" = "off" ]; then
     proxy="--proxy=${use_proxy}"
 fi
 
+if [ "$use_no_check" = "True" ]; then
+    wget_add_args+=("--no-check-certificate")
+fi
+
+if [ "$verbose" != "True" ]; then
+    wget_add_args+=("-q")
+fi
+
 get_status() {
     filename=$(mktemp -u -p "$output_dir" --suffix="-${PROGNAME}")
 
     # If authentication via private key ist defined
     if [ -n "${private_key}" ]
     then
-       wget -q -t 3 -T 3 ${cert} ${private_key} $scheme://${hostname}:${port}/${status_page}?pretty=true -O ${filename} ${proxy}
+       wget -t 3 -T 3 ${cert} ${private_key} $scheme://${hostname}:${port}/${status_page}?pretty=true -O ${filename} ${proxy} ${wget_add_args[@]}
     elif [ "${authentication}" = "True" ]; then
-       wget -q -t 3 -T 3 ${ca_cert} ${user} ${pass} $scheme://${hostname}:${port}/${status_page}?pretty=true -O ${filename} ${proxy}
+       wget -t 3 -T 3 ${ca_cert} ${user} ${pass} $scheme://${hostname}:${port}/${status_page}?pretty=true -O ${filename} ${proxy} ${wget_add_args[@]}
     else
-       wget -q -t 3 -T 3 ${ca_cert} $scheme://${hostname}:${port}/${status_page}?pretty=true -O ${filename} ${proxy}
+       wget -t 3 -T 3 ${ca_cert} $scheme://${hostname}:${port}/${status_page}?pretty=true -O ${filename} ${proxy} ${wget_add_args[@]}
     fi
 }
 
