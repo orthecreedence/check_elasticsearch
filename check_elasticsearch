@@ -41,6 +41,7 @@ carbon_key="system.:::name:::.cluster.app.elasticsearch.cluster"
 use_proxy="on"
 verbose="False"
 wget_add_args=()
+jq="jq -r"
 
 
 print_version() {
@@ -228,17 +229,18 @@ get_status() {
 }
 
 get_vals() {
-    name=$(grep '\"cluster_name\" :' ${filename} | awk -F '"' '{print $4}')
-    status=$(grep '\"status\" :' ${filename} | awk -F '"' '{print $4}')
-    timed_out=`grep \"timed_out\" ${filename} | awk '{print $3}' | sed 's|[\r",]||g'`
-    number_nodes=`grep \"number_of_nodes\" ${filename} | awk '{print $3}' | sed 's|[\r",]||g'`
-    number_data_nodes=`grep \"number_of_data_nodes\" ${filename} | awk '{print $3}' | sed 's|[\r",]||g'`
-    active_primary_shards=`grep \"active_primary_shards\" ${filename} | awk '{print $3}' | sed 's|[\r",]||g'`
-    active_shards=`grep \"active_shards\" ${filename} | awk '{print $3}' | sed 's|[\r",]||g'`
-    relocating_shards=`grep \"relocating_shards\" ${filename} | awk '{print $3}' | sed 's|[\r",]||g'`
-    initializing_shards=`grep \"initializing_shards\" ${filename} | awk '{print $3}' | sed 's|[\r",]||g'`
-    delayed_unassigned_shards=`grep \"delayed_unassigned_shards\" ${filename} | awk '{print $3}' | sed 's|[\r",]||g'`
-    unassigned_shards=`grep -w '\"unassigned_shards\"' ${filename} | awk '{print $3}' | sed 's|[\r",]||g'`
+    name=$(${jq} '.cluster_name' ${filename})
+    status=$(${jq} '.status' ${filename})
+    timed_out=$(${jq} '.timed_out' ${filename})
+    number_nodes=$(${jq} '.number_of_nodes' ${filename})
+    active_shards=$(${jq} '.active_shards' ${filename})
+    relocating_shards=$(${jq} '.relocating_shards' ${filename})
+    number_data_nodes=$(${jq} '.number_of_data_nodes' ${filename})
+    unassigned_shards=$(${jq} '.unassigned_shards' ${filename})
+    initializing_shards=$(${jq} '.initializing_shards' ${filename})
+    active_primary_shards=$(${jq} '.active_primary_shards' ${filename})
+    delayed_unassigned_shards=$(${jq} '.delayed_unassigned_shards' ${filename})
+
     rm -f ${filename}
 
     # Determine the Nagios Status and Exit Code
