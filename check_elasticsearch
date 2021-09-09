@@ -232,6 +232,19 @@ get_status() {
     fi
 }
 
+get_val() {
+	filename=$1
+	key=$2
+	ty=$3
+
+	line=$(grep '"'"${key}"'"' ${filename})
+	if [ "${ty}" == "string" ]; then
+		echo ${line} | awk -F '"' '{print $4}'
+	else
+		echo ${line} | awk '{print $3}' | sed 's|[\r",]||g'
+	fi
+}
+
 get_vals() {
     if [[ $use_jq == "True" ]]; then
         name=$(${jq} '.cluster_name' ${filename})
