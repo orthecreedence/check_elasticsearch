@@ -233,45 +233,34 @@ get_status() {
 }
 
 get_val() {
-	filename=$1
-	key=$2
-	ty=$3
+    filename=$1
+    key=$2
+    ty=$3
 
-	line=$(grep '"'"${key}"'"' ${filename})
-	if [ "${ty}" == "string" ]; then
-		echo ${line} | awk -F '"' '{print $4}'
-	else
-		echo ${line} | awk '{print $3}' | sed 's|[\r",]||g'
-	fi
+    if [[ $use_jq == "True" ]]; then
+        ${jq} ".${key}" ${filename}
+    else
+        line=$(grep '"'"${key}"'"' ${filename})
+        if [ "${ty}" == "string" ]; then
+            echo ${line} | awk -F '"' '{print $4}'
+        else
+            echo ${line} | awk '{print $3}' | sed 's|[\r",]||g'
+        fi
+    fi
 }
 
 get_vals() {
-    if [[ $use_jq == "True" ]]; then
-        name=$(${jq} '.cluster_name' ${filename})
-        status=$(${jq} '.status' ${filename})
-        timed_out=$(${jq} '.timed_out' ${filename})
-        number_nodes=$(${jq} '.number_of_nodes' ${filename})
-        active_shards=$(${jq} '.active_shards' ${filename})
-        relocating_shards=$(${jq} '.relocating_shards' ${filename})
-        number_data_nodes=$(${jq} '.number_of_data_nodes' ${filename})
-        unassigned_shards=$(${jq} '.unassigned_shards' ${filename})
-        initializing_shards=$(${jq} '.initializing_shards' ${filename})
-        active_primary_shards=$(${jq} '.active_primary_shards' ${filename})
-        delayed_unassigned_shards=$(${jq} '.delayed_unassigned_shards' ${filename})
-    else
-        name=$(grep '\"cluster_name\" :' ${filename} | awk -F '"' '{print $4}')
-        status=$(grep '\"status\" :' ${filename} | awk -F '"' '{print $4}')
-        timed_out=`grep \"timed_out\" ${filename} | awk '{print $3}' | sed 's|[\r",]||g'`
-        number_nodes=`grep \"number_of_nodes\" ${filename} | awk '{print $3}' | sed 's|[\r",]||g'`
-        number_data_nodes=`grep \"number_of_data_nodes\" ${filename} | awk '{print $3}' | sed 's|[\r",]||g'`
-        active_primary_shards=`grep \"active_primary_shards\" ${filename} | awk '{print $3}' | sed 's|[\r",]||g'`
-        active_shards=`grep \"active_shards\" ${filename} | awk '{print $3}' | sed 's|[\r",]||g'`
-        relocating_shards=`grep \"relocating_shards\" ${filename} | awk '{print $3}' | sed 's|[\r",]||g'`
-        initializing_shards=`grep \"initializing_shards\" ${filename} | awk '{print $3}' | sed 's|[\r",]||g'`
-        delayed_unassigned_shards=`grep \"delayed_unassigned_shards\" ${filename} | awk '{print $3}' | sed 's|[\r",]||g'`
-        unassigned_shards=`grep -w '\"unassigned_shards\"' ${filename} | awk '{print $3}' | sed 's|[\r",]||g'`
-    fi
-
+    name=$(get_val ${filename} "cluster_name" "string")
+    status=$(get_val ${filename} "status" "string")
+    timed_out=$(get_val ${filename} "timed_out")
+    number_nodes=$(get_val ${filename} "number_of_nodes")
+    number_data_nodes=$(get_val ${filename} "number_of_data_nodes")
+    active_primary_shards=$(get_val ${filename} "active_primary_shards")
+    active_shards=$(get_val ${filename} "active_shards")
+    relocating_shards=$(get_val ${filename} "relocating_shards")
+    initializing_shards=$(get_val ${filename} "initializing_shards")
+    delayed_unassigned_shards=$(get_val ${filename} "delayed_unassigned_shards")
+    unassigned_shards=$(get_val ${filename} "unassigned_shards")
     rm -f ${filename}
 
     # Determine the Nagios Status and Exit Code
@@ -282,7 +271,7 @@ get_vals() {
         if [ -z "$ok_on_yellow" ]; then
             NAGSTATUS="WARNING"
             EXST=$ST_WR
-	else
+        else
             NAGSTATUS="OK"
             EXST=$ST_OK
         fi
