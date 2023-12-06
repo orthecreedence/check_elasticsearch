@@ -192,6 +192,7 @@ done
 if [ "$authentication" = "True" ]; then
     pass="--password=${pass}"
     user="--user=${user}"
+    wget_add_args+=("--auth-no-challenge")
 fi
 
 if [ "$use_ca" = "True" ]; then
