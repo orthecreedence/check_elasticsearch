@@ -227,7 +227,7 @@ get_status() {
     then
        wget -t 3 -T 3 ${cert} ${private_key} $scheme://${hostname}:${port}/${status_page}?pretty=true -O ${filename} ${proxy} ${wget_add_args[@]}
     elif [ "${authentication}" = "True" ]; then
-       wget -t 3 -T 3 ${ca_cert} ${user} ${pass}  $scheme://${hostname}:${port}/${status_page}?pretty=true -O ${filename} ${proxy} ${wget_add_args[@]}
+       wget -t 3 -T 3 ${ca_cert} ${user} ${pass} $scheme://${hostname}:${port}/${status_page}?pretty=true -O ${filename} ${proxy} ${wget_add_args[@]}
     else
        wget -t 3 -T 3 ${ca_cert} $scheme://${hostname}:${port}/${status_page}?pretty=true -O ${filename} ${proxy} ${wget_add_args[@]}
     fi
